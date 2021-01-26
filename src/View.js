@@ -1,7 +1,7 @@
 import onChange from 'on-change';
 
 class View {
-  constructor() {
+  constructor(document) {
     this.form = document.querySelector('.rss-form');
     this.feedsBox = document.querySelector('.feeds');
     this.postsBox = document.querySelector('.posts');
@@ -21,7 +21,6 @@ class View {
       this.feedback.classList.add('text-info');
       this.feedback.innerHTML = successMessage;
     }
-
   }
 
   clearFeedback() {
@@ -47,7 +46,7 @@ class View {
     }
     if (loadingStatus === 'finished') {
       this.submit.disabled = false;
-      this.renderFeedback({}, 'Rss has been added')
+      this.renderFeedback({}, 'Rss has been added');
     }
   }
 
@@ -66,7 +65,23 @@ class View {
   }
 
   renderPosts(posts) {
-
+    const h3 = document.createElement('h3');
+    h3.textContent = 'Posts';
+    const ul = document.createElement('ul');
+    const classes = ['list-group-item',
+      'd-flex',
+      'justify-content-between',
+      'align-items-start'];
+    const html = posts.map(({ id, link, title }) => {
+      const li = document.createElement('li');
+      const href = `<a href=${link} class="font-weight-bold" data-id="${id}" target="_blank" rel="noopener noreferrer">${title}</a>`;
+      const button = `<button type="button" class="btn btn-primary btn-sm" data-id="${id}" data-toggle="modal" data-target="#modal">Preview</button>`;
+      li.classList.add(...classes);
+      li.innerHTML = ([href, button].join(' '));
+      return li;
+    });
+    ul.prepend(...html);
+    this.postsBox.append(h3, ul);
   }
 
   watch(state) {
@@ -81,7 +96,10 @@ class View {
         this.statusLoadingHandler(value);
       }
       if (path === 'feeds') {
-        this.renderFeeds(value)
+        this.renderFeeds(value);
+      }
+      if (path === 'posts') {
+        this.renderPosts(value);
       }
     });
   }

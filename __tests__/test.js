@@ -1,1 +1,1 @@
-const defaulturl = "http://lorem-rss.herokuapp.com/feed?unit=year";
+const defaulturl = 'http://lorem-rss.herokuapp.com/feed?unit=year';

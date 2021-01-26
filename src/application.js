@@ -2,14 +2,12 @@ import 'bootstrap/dist/css/bootstrap-grid.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import * as yup from 'yup';
-import View from './View.js';
 import _ from 'lodash';
+import View from './View.js';
 
 const proxy = 'hexlet-allorigins.herokuapp.com';
-const schema = yup.lazy((_value, l) => {
-  return yup.string().required().url('Must be a valid url!')
-    .notOneOf(l, 'url is already exists');
-})
+const schema = yup.lazy((_value, l) => yup.string().required().url('Must be a valid url!')
+  .notOneOf(l, 'url is already exists'));
 
 const parse = (data) => {
   const feedTitle = data.querySelector('channel > title').textContent;
@@ -20,8 +18,10 @@ const parse = (data) => {
     const description = item.querySelector('description').textContent;
     const title = item.querySelector('title').textContent;
     const link = item.querySelector('link').textContent;
-    const id = _.uniqueId('item');
-    return { id, feedId: feedObj.id, title, description, link };
+    const id = _.uniqueId('item_');
+    return {
+      id, feedId: feedObj.id, title, description, link,
+    };
   });
   return { feedObj, itemsObj };
 };
@@ -31,7 +31,7 @@ const validate = (string, urlsList) => {
     schema.validateSync(string, urlsList);
     return {};
   } catch (error) {
-    return { ValidationError: error.message }
+    return { ValidationError: error.message };
   }
 };
 
@@ -50,7 +50,7 @@ export default () => {
     posts: [],
     errors: [],
   };
-  const view = new View();
+  const view = new View(document);
   view.watch(state);
   view.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -73,7 +73,7 @@ export default () => {
       .then((rss) => {
         const { feedObj, itemsObj } = parse(rss);
         view.watcher.feeds.unshift(feedObj);
-        view.watcher.posts.unshift(itemsObj);
+        view.watcher.posts = _.concat(itemsObj, view.watcher.posts);
         view.watcher.loadingState.status = 'finished';
         view.form.reset();
       })
