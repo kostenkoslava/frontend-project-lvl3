@@ -12,13 +12,18 @@ const schema = yup.lazy((_value, l) => {
 })
 
 const parse = (data) => {
-  const parser = new DOMParser();
-  const parsedData = parser.parseFromString(data, 'application/xml');
-  const rss = parsedData.getElementsByTagName('rss');
-  if (rss.length === 0) {
-    throw new Error('This source doesn\'t contain valid rss');
-  }
-  return rss;
+  const feedTitle = data.querySelector('channel > title').textContent;
+  const feedDescr = data.querySelector('channel > description').textContent;
+  const feedObj = { id: _.uniqueId(), title: feedTitle, description: feedDescr };
+  const items = data.querySelectorAll('item');
+  const itemsObj = Array.from(items).map((item) => {
+    const description = item.querySelector('description').textContent;
+    const title = item.querySelector('title').textContent;
+    const link = item.querySelector('link').textContent;
+    const id = _.uniqueId('item');
+    return { id, feedId: feedObj.id, title, description, link };
+  });
+  return { feedObj, itemsObj };
 };
 
 const validate = (string, urlsList) => {
@@ -65,29 +70,17 @@ export default () => {
         }
         return rss;
       })
+      .then((rss) => {
+        const { feedObj, itemsObj } = parse(rss);
+        view.watcher.feeds.unshift(feedObj);
+        view.watcher.posts.unshift(itemsObj);
+        view.watcher.loadingState.status = 'finished';
+        view.form.reset();
+      })
       .catch((e) => {
         const { name, message } = e;
         view.watcher.loadingState.error = { [name]: message };
         view.watcher.loadingState.status = 'failed';
       });
-
-
-
-    // validate(link)
-    //   .then((l) => {
-    //     return axios.get(`https://${proxy}/get?url=${link}`)
-    //       .then((r) => parse(r.data.contents))
-    //   })
-    //   .then((validData) => {
-    //     const feedTitle = validData[0].querySelector('title');
-    //     const feedDescription = validData[0].querySelector('description');
-    //     const feedObj = { id: _.uniqueId(), title: feedTitle, description: feedDescription };
-    //     watchState.feeds.push(feedObj);
-    //   })
-    //   .catch((e) => {
-    //     console.log(e, -1)
-    //   })
-
   });
-
 };

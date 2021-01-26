@@ -18,7 +18,7 @@ class View {
       this.feedback.classList.add('text-danger');
     }
     if (successMessage) {
-      this.feedback.classList.add('text-success');
+      this.feedback.classList.add('text-info');
       this.feedback.innerHTML = successMessage;
     }
 
@@ -45,17 +45,24 @@ class View {
     if (loadingStatus === 'failed') {
       this.submit.disabled = false;
     }
+    if (loadingStatus === 'finished') {
+      this.submit.disabled = false;
+      this.renderFeedback({}, 'Rss has been added')
+    }
   }
 
   renderFeeds(feeds) {
-    const titleFeeds = '<h2>Feeds</h2>';
-    const feedUl = this.createCustomElement('ul', ['list-group mb-5']);
+    const titleFeeds = document.createElement('h2');
+    titleFeeds.textContent = 'Feeds';
+    const feedUl = document.createElement('ul');
+    feedUl.classList.add('list-group', 'mb-5');
     feeds.map((f) => {
-      const li = this.createCustomElement('li', ['list-group mb-5']);
+      const li = document.createElement('li');
+      li.classList.add('list-group-item');
       li.innerHTML = `<h3>${f.title}</h3><p>${f.description}</p>`;
-      feedUl.appendChild(li);
+      feedUl.prepend(li);
     });
-    this.feedInner.append(titleFeeds, feedUl);
+    this.feedsBox.append(titleFeeds, feedUl);
   }
 
   renderPosts(posts) {
@@ -72,6 +79,9 @@ class View {
       }
       if (path === 'loadingState.status') {
         this.statusLoadingHandler(value);
+      }
+      if (path === 'feeds') {
+        this.renderFeeds(value)
       }
     });
   }
