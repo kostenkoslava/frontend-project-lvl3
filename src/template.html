@@ -10,8 +10,23 @@
 </head>
 
 <body>
+  <aside></aside>
   <main class="flex-grow-1">
-    <section class="container-fluid bg-secondary p-5">
+    <section class="container-fluid bg-secondary">
+      <div class="row">
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+          <label
+            class="btn btn-primary btn-sm font-weight-bolder px-5 py-2 rounded text-monospace active"
+          >
+            <input type="radio" name="lang" id="en" />EN
+          </label>
+          <label
+            class="btn btn-primary btn-sm font-weight-bolder px-5 py-2 rounded text-monospace"
+          >
+            <input type="radio" name="lang" id="ru" />РУ
+          </label>
+        </div>
+      </div>
       <div class="row pt-3">
         <h1 class="fw-bold col text-center display-1">RSS-agregator</h1>
       </div>
@@ -20,6 +35,7 @@
           placeholder="RSS-link">
         <button class="btn btn-dark btn-lg ml-4 col-2" type="submit">Add</button>
       </form>
+      <small id="link-help" class="form-text">Example: https://news.ycombinator.com/rss <br> https://ru.hexlet.io/lessons.rss</small>
       <div class="feedback font-weight-bold"></div>
     </section>
     <section class="container-fluid p-5">

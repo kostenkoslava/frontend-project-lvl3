@@ -1,10 +1,12 @@
-setup:
-	npm install
+develop:
+	npx webpack-dev-server
+
 install:
-	npm ci
-	sudo npm link
-publish:
-	npm publish --dry-run
+	npm install
+
+build:
+	NODE_ENV=production npx webpack
+
 lint:
 	npx eslint .
 

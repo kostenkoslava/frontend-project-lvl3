@@ -1,15 +1,19 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+const mode = process.env.NODE_ENV || 'development';
 
 module.exports = {
-  mode: "development",
+  devtool: mode === 'development' ? 'inline-source-map' : false,
+  mode,
   target: "node",
   entry: {
     main: path.resolve(__dirname, "./src/index.js"),
   },
   output: {
-    filename: "main.js",
+    filename: "[name].bundle.js",
     path: path.resolve(__dirname, "public"),
   },
   devServer: {
@@ -21,6 +25,7 @@ module.exports = {
     port: 8080,
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: "RSS agregator",
       template: path.resolve(__dirname, "./src/template.html"),
@@ -30,7 +35,13 @@ module.exports = {
   ],
   module: {
     rules: [
-      { test: /\.js$/, exclude: /node_modules/, use: ["babel-loader"] },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+        }
+      },
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"],

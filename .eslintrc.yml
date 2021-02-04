@@ -3,20 +3,19 @@ plugins:
   - jest
 
 env:
-  browser: true
   node: true
+  jest: true
+  browser: true
   es2020: true
-  jest/globals: true
 
 parserOptions:
   ecmaVersion: 2020
   sourceType: module
+
 extends:
   - "airbnb-base"
   - "plugin:jest/recommended"
 
-ignorePatterns: ["./public/main.js", "node_modules"]
 rules:
   no-console: 0
   import/extensions: 0
-  no-underscore-dangle: [2, { "allow": ["__filename", "__dirname"] }]
