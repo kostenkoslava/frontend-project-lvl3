@@ -20,7 +20,7 @@ yup.setLocale({
 
 const getRssData = (url) => {
   console.log(url)
-  const proxy = 'https://hexlet-allorigins.herokuapp.com/get?url=';
+  const proxy = 'https://api.allorigins.win/get?url=';
   return axios.get(`${proxy}${url}`)
     .then((response) => parseRss(response.data.contents))
     .then(({ feedObj, postsObj }) => {
