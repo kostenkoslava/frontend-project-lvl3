@@ -16,14 +16,6 @@ module.exports = {
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "public"),
   },
-  devServer: {
-    historyApiFallback: true,
-    contentBase: path.resolve(__dirname, "public"),
-    open: true,
-    compress: true,
-    hot: true,
-    port: 8080,
-  },
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
