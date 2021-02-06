@@ -1,55 +1,53 @@
-import 'bootstrap/dist/css/bootstrap-grid.min.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+/* eslint no-param-reassign: ["error", { "props": false }] */
+
+import 'bootstrap/js/dist/modal.js';
 import axios from 'axios';
 import * as yup from 'yup';
 import _ from 'lodash';
-import View from './View.js';
 import i18n from 'i18next';
+import View from './View.js';
 import resources from './locales/index.js';
-import parseRss from './parser.js'
+import parseRss from './parser.js';
 
 const delay = 5000;
+
 yup.setLocale({
   string: {
     url: 'url',
   },
   mixed: {
     notOneOf: 'notOneOf',
-  }
-})
+  },
+});
 
 const getRssData = (url) => {
-  console.log(url)
   const proxy = 'https://api.allorigins.win/get?url=';
   return axios.get(`${proxy}${url}`)
     .then((response) => parseRss(response.data.contents))
-    .then(({ feedObj, postsObj }) => {
-      const feed = { url, ...feedObj };
-      return { feed, posts: postsObj };
-    })
+    .then(({ feed, posts }) => ({ feed: ({ url, ...feed }), posts }));
 };
 
 const validate = (url, urlsList) => yup.string().url().notOneOf(urlsList).validate(url);
 
-const updateFeeds = (watchedState, delay) => {
+const updateFeeds = (watchedState) => {
   Promise.all(watchedState.feeds.map(({ url }) => getRssData(url)))
     .then((rssData) => {
       rssData.forEach(({ posts }, feedId) => {
         const newPosts = _.differenceWith(
           posts.map((post) => ({ feedId, ...post })),
           watchedState.posts,
-          _.isEqual);
-        newPosts.forEach((post) => watchedState.posts.unshift(post))
-        console.log(rssData, watchedState.posts[0])
-      })
+          (a, b) => a.title === b.title,
+        );
+        newPosts.forEach((post) => watchedState.posts.unshift(post));
+      });
     }).finally(() => {
       setTimeout(() => {
-        updateFeeds(watchedState, delay);
+        updateFeeds(watchedState);
       }, delay);
-    })
-}
+    });
+};
 
-const addHandlers = (watchedState, view, langs) => {
+const addHandlers = (watchedState, view) => {
   view.form.addEventListener('submit', (e) => {
     e.preventDefault();
     watchedState.form.url = new FormData(e.target).get('url');
@@ -68,19 +66,32 @@ const addHandlers = (watchedState, view, langs) => {
         watchedState.loadingState.status = 'finished';
         watchedState.form.status = 'filling';
         setTimeout(() => {
-          updateFeeds(watchedState, delay);
+          updateFeeds(watchedState);
         }, delay);
       })
       .catch((err) => {
         if (err.type) {
           watchedState.form.status = 'invalid';
+          watchedState.form.error = err.type;
+          return;
         }
         watchedState.form.error = err.message;
       });
   });
-}
+  document.addEventListener('click', (e) => {
+    const { toggle, id } = e.target.dataset;
+    if (toggle !== 'modal') return;
+    const currentPost = watchedState.posts.find(({ id: postId }) => postId === id);
+    if (!currentPost) return;
+    watchedState.modalItem = currentPost;
+    watchedState.readPosts = {
+      ...watchedState.readPosts,
+      [id]: true,
+    };
+  });
+};
+
 const app = () => {
-  const langs = ['en', 'ru']
   const state = {
     form: {
       status: 'filling',
@@ -95,7 +106,8 @@ const app = () => {
     lang: 'en',
     feeds: [],
     posts: [],
-    message: null,
+    readPosts: {},
+    modalItem: null,
   };
   i18n.init({
     lng: state.lang,
@@ -103,7 +115,7 @@ const app = () => {
   }).then(() => {
     const view = new View(document, state);
     const watchedState = view.watcher;
-    addHandlers(watchedState, view, langs)
-  })
-}
+    addHandlers(watchedState, view);
+  });
+};
 export default app;

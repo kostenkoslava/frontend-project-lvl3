@@ -1,3 +1,4 @@
+import _ from 'lodash';
 
 export default (data) => {
   const parser = new DOMParser();
@@ -8,15 +9,16 @@ export default (data) => {
   }
   const feedTitleElement = rss.querySelector('channel > title');
   const feedDescrElement = rss.querySelector('channel > description');
-  const feedObj = {
+  const feed = {
     title: feedTitleElement.textContent,
     description: feedDescrElement.textContent,
   };
   const items = rss.querySelectorAll('item');
-  const postsObj = Array.from(items).map((item) => ({
+  const posts = Array.from(items).map((item) => ({
     title: item.querySelector('title').textContent,
     link: item.querySelector('link').textContent,
     description: item.querySelector('description').textContent,
-  }))
-  return { feedObj, postsObj };
+    id: _.uniqueId(),
+  }));
+  return { feed, posts };
 };
